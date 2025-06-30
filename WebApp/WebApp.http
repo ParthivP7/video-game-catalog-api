@@ -1,0 +1,39 @@
+### Get all video games
+GET https://localhost:7154/api/video-games
+Accept: application/json
+
+###
+
+### Get a video game by ID
+GET https://localhost:7154/api/video-games/1
+Accept: application/json
+
+###
+
+### Add a new video game
+POST https://localhost:7154/api/video-games
+Content-Type: application/json
+
+{
+  "title": "Hollow Knight",
+  "genre": "Metroidvania",
+  "releaseDate": "2017-02-24"
+}
+
+###
+
+### Update an existing video game
+PATCH https://localhost:7154/api/video-games/1
+Content-Type: application/json
+
+{
+  "title": "Hollow Knight: Silksong",
+  "genre": "Metroidvania",
+  "releaseDate": "2025-12-31"
+}
+
+###
+
+### Delete a video game
+DELETE https://localhost:7154/api/video-games/1
+Accept: application/json
