@@ -140,7 +140,7 @@ All routes are under: `/api/videogames`
 | GET    | `/api/videogames`      | Get all video games                  |
 | GET    | `/api/videogames/{id}` | Get a game by ID                     |
 | POST   | `/api/videogames`      | Add a new game (Create DTO)          |
-| PUT    | `/api/videogames/{id}` | Update an existing game (Update DTO) |
+| PATCH  | `/api/videogames/{id}` | Update an existing game (Update DTO) |
 | DELETE | `/api/videogames/{id}` | Delete a game by ID                  |
 
 ---
