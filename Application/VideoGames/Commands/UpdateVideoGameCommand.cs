@@ -1,3 +1,4 @@
+using Application.Common.Attributes;
 using Domain.VideoGames;
 using FluentValidation;
 using MediatR;
@@ -9,8 +10,13 @@ namespace Application.VideoGames.Commands;
 public class UpdateVideoGameCommand : IRequest<UpdateVideoGameCommand.Result>
 {
     public int VideoGameId { get; set; }
+    
+    [Sanitize]
     public string Title { get; set; } = string.Empty;
+
+    [Sanitize]
     public string Genre { get; set; } = string.Empty;
+    
     public DateTime ReleaseDate { get; set; }
 
     public class Validator : AbstractValidator<UpdateVideoGameCommand>

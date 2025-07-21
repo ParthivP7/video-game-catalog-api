@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Application;
 using Application.Exceptions;
 using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -49,6 +50,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Application layer (MediatR, Pipelines, Validators)
 builder.Services.RegisterApplication(builder.Configuration);
+
+// Sanitize all [Sanitize]-decorated string properties in MediatR requests to prevent XSS
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(SanitizationBehavior<,>));
+
 
 // ----------------------------
 // Build and Configure App

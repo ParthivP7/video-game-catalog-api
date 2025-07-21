@@ -1,8 +1,7 @@
 using Application.VideoGames.Commands;
-using Domain.VideoGames;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
-using Xunit;
+using MediatR;
 
 namespace Tests.Commands;
 
@@ -29,7 +28,7 @@ public class AddVideoGameCommandTests
         {
             Title = "New Game",
             Genre = "Action",
-            ReleaseDate = new DateTime(2022, 5, 10)
+            ReleaseDate = new DateTime(2024, 5, 10)
         };
 
         // Act
@@ -39,5 +38,31 @@ public class AddVideoGameCommandTests
         var saved = await context.VideoGames.FindAsync(result.VideoGameId);
         Assert.NotNull(saved);
         Assert.Equal("New Game", saved.Title);
+    }
+
+    [Fact]
+    public async Task SanitizationBehavior_ShouldRemoveScriptTags_AndPreserveText()
+    {
+        // Arrange
+        var command = new AddVideoGameCommand
+        {
+            Title = "<script>alert('XSS')</script>Game",
+            Genre = "Action<script>alert(1)</script>",
+            ReleaseDate = DateTime.Today
+        };
+
+        var behavior = new SanitizationBehavior<AddVideoGameCommand, Unit>();
+        
+
+        Task<Unit> NextHandler(CancellationToken cancellationToken) => Task.FromResult(Unit.Value);
+
+        // Act
+        var result = await behavior.Handle(command, NextHandler, CancellationToken.None);
+
+        // Assert
+        Assert.DoesNotContain("<script>", command.Title);
+        Assert.DoesNotContain("<script>", command.Genre);
+        Assert.Equal("Game", command.Title);
+        Assert.Equal("Action", command.Genre);
     }
 }

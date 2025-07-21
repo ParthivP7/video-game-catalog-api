@@ -2,7 +2,7 @@ using Application.VideoGames.Commands;
 using Domain.VideoGames;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
-using Xunit;
+using MediatR;
 
 namespace Tests.Commands;
 
@@ -52,5 +52,30 @@ public class UpdateVideoGameCommandTests
         Assert.NotNull(updated);
         Assert.Equal("Updated Title", updated.Title);
         Assert.Equal("Adventure", updated.Genre);
+    }
+
+    [Fact]
+    public async Task SanitizationBehavior_ShouldRemoveScriptTags_AndPreserveText()
+    {
+        // Arrange
+        var command = new UpdateVideoGameCommand
+        {
+            VideoGameId = 1,
+            Title = "<script>alert('x')</script>Updated",
+            Genre = "Adventure<script>alert('hack')</script>",
+            ReleaseDate = DateTime.Today
+        };
+
+        var behavior = new SanitizationBehavior<UpdateVideoGameCommand, Unit>();
+        Task<Unit> NextHandler(CancellationToken cancellationToken) => Task.FromResult(Unit.Value);
+
+        // Act
+        var result = await behavior.Handle(command, NextHandler, CancellationToken.None);
+
+        // Assert
+        Assert.DoesNotContain("<script>", command.Title);
+        Assert.DoesNotContain("<script>", command.Genre);
+        Assert.Equal("Updated", command.Title);
+        Assert.Equal("Adventure", command.Genre);
     }
 }

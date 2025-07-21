@@ -1,5 +1,4 @@
 using Domain.VideoGames;
-using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 namespace WebApp;
