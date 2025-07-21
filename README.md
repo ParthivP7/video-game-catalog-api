@@ -6,8 +6,9 @@ A clean, maintainable catalog API for video games built with **ASP.NET Core 8**,
 - ✅ Entity-driven for simplicity
 - ✅ EF Core 8 (Code-First) with SQLite
 - ✅ FluentValidation for input validation
-- ✅ Unit Testing with xUnit
+- ✅ MediatR pipeline behaviors for validation, performance, and sanitization
 - ✅ Seeded data for easy testing
+- ✅ Unit Testing with xUnit
 - ✅ REST client support via `.http` file
 - ✅ Runs on HTTPS (`https://localhost:7154`)
 
@@ -21,6 +22,7 @@ A clean, maintainable catalog API for video games built with **ASP.NET Core 8**,
 | Data Access   | EF Core 8 + SQLite (Code First)   |
 | Validation    | FluentValidation                  |
 | Architecture  | CQRS (Command/Query separation)   |
+| Mediation     | MediatR + Pipelines               |
 | Testing       | xUnit                             |
 | Tooling       | Rider / VS Code, `.http` client   |
 
@@ -43,6 +45,11 @@ VideoGameCatalog/
 │   ├── Queries/                    # Read operations (CQRS)
 │   ├── Validators/                 # FluentValidation rules
 │   ├── Pipelines/                  # Request logging + validation
+│   ├── Common/                     # Reusable infrastructure
+│   │   ├── Attributes/             # [Sanitize] marker attribute
+│   │   │   └── SanitizeAttribute.cs
+│   │   └── Behaviors/              # MediatR behaviors
+│   │       └── SanitizationBehavior.cs
 │   └── DependencyInjection.cs      # DI extension for MediatR
 │
 ├── Persistence/                    # Infrastructure layer
@@ -149,13 +156,13 @@ All routes are under: `/api/videogames`
 
 ```http
 # Get all games
-GET https://localhost:7154/video-games
+GET https://localhost:7154/api/video-games
 
 # Get by ID
-GET https://localhost:7154/video-games/1
+GET https://localhost:7154/api/video-games/1
 
 # Create a new game
-POST https://localhost:7154/video-games
+POST https://localhost:7154/api/video-games
 Content-Type: application/json
 
 {
@@ -165,7 +172,7 @@ Content-Type: application/json
 }
 
 # Update a game
-PATCH https://localhost:7154/video-games/1
+PATCH https://localhost:7154/api/video-games/1
 Content-Type: application/json
 
 {
@@ -175,7 +182,7 @@ Content-Type: application/json
 }
 
 # Delete a game
-DELETE https://localhost:7154/video-games/1
+DELETE https://localhost:7154/api/video-games/1
 ```
 
 > Supports JetBrains Rider HTTP client and VS Code REST Client.
@@ -198,11 +205,29 @@ dotnet test
 
 ---
 
+## 🔐 Input Sanitization
+
+This app includes a reusable **HTML sanitization behavior** that:
+
+* Automatically strips unsafe tags like `<script>` from inputs.
+* Applies to any MediatR request using the `[Sanitize]` attribute on string properties.
+
+You can mark any property like this:
+
+```csharp
+[Sanitize]
+public string Title { get; set; } = string.Empty;
+```
+
+This ensures protection against XSS attacks before hitting any handler logic.
+
+---
+
 ## 💡 Highlights
 
 * CQRS-style separation of responsibilities
 * MediatR-powered command/query architecture
-* Validation via FluentValidation
+* Validation via FluentValidation + HTML sanitization
 * Pre-seeded SQLite database for instant testing
 * Swagger enabled for dev exploration
 * HTTPS + dev launch profile ready
